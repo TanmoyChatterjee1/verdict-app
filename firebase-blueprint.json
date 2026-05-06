@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Store user stats and profile information",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "joinDate": { "type": "string", "format": "date-time" },
+        "accuracyScore": { "type": "number" },
+        "streak": { "type": "number" },
+        "verdictsCast": { "type": "number" },
+        "oracleRank": { "type": "number" },
+        "moneySaved": { "type": "number" },
+        "email": { "type": "string", "format": "email" },
+        "avatarBase64": { "type": "string" },
+        "bio": { "type": "string" },
+        "onboardingComplete": { "type": "boolean" },
+        "isDemo": { "type": "boolean" },
+        "country": { "type": "string" }
+      },
+      "required": ["username", "joinDate"]
+    },
+    "Product": {
+      "title": "Product Case",
+      "description": "A product submitted for community verdict",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "imageBase64": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "image": { "type": "string" },
+        "category": { "type": "string", "enum": ["TECH", "FASHION", "HEALTH", "HOME", "OTHER"] },
+        "description": { "type": "string" },
+        "roast": { "type": "string" },
+        "votes": {
+          "type": "object",
+          "properties": {
+            "essential": { "type": "number" },
+            "maybe": { "type": "number" },
+            "waste": { "type": "number" }
+          }
+        },
+        "regretScore": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["name", "price", "category", "authorId"]
+    },
+    "Comment": {
+      "title": "Product Comment",
+      "description": "A discussion point on a product case",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "accuracyScore": { "type": "number" },
+        "verdict": { "type": "string", "enum": ["ESSENTIAL", "MAYBE", "WASTE"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["productId", "userId", "username", "text", "verdict"]
+    },
+    "Notification": {
+      "title": "User Notification",
+      "description": "App notifications for users",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "message": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "username": { "type": "string" },
+        "verdict": { "type": "string" },
+        "icon": { "type": "string" },
+        "read": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "message", "timestamp", "read"]
+    },
+    "Vote": {
+      "title": "User Vote",
+      "description": "A single user's vote on a product",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "productId": { "type": "string" },
+        "verdict": { "type": "string", "enum": ["ESSENTIAL", "MAYBE", "WASTE"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "productId", "verdict", "timestamp"]
+    },
+    "GlobalStats": {
+      "title": "Global Ecosystem Stats",
+      "description": "Total savings tracked globally",
+      "type": "object",
+      "properties": {
+        "totalSaved": { "type": "number" }
+      }
+    },
+    "Activity": {
+      "title": "Global Activity",
+      "description": "A log of recent votes for the live ticker",
+      "type": "object",
+      "properties": {
+        "city": { "type": "string" },
+        "productName": { "type": "string" },
+        "amount": { "type": "number" },
+        "verdict": { "type": "string", "enum": ["ESSENTIAL", "MAYBE", "WASTE"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["city", "productName", "amount", "verdict", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product cases and their aggregated votes"
+    },
+    "/products/{productId}/votes/{userId}": {
+      "schema": "Vote",
+      "description": "Individual user votes per product"
+    },
+    "/products/{productId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "User comments on products"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/stats/global": {
+      "schema": "GlobalStats",
+      "description": "Global savings counter"
+    },
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Log of recent activities across the platform"
+    }
+  }
+}

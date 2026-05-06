@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Global Denial ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return request.auth != null && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128; }
+    
+    // Entity Validations
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.category in ['TECH', 'FASHION', 'HEALTH', 'HOME', 'OTHER'] &&
+             data.authorId is string;
+    }
+
+    function isValidVote(data) {
+      return data.userId == request.auth.uid &&
+             data.productId is string &&
+             data.verdict in ['ESSENTIAL', 'MAYBE', 'WASTE'];
+    }
+
+    function isValidComment(data) {
+      return data.userId == request.auth.uid &&
+             data.text is string && data.text.size() <= 1000 &&
+             data.verdict in ['ESSENTIAL', 'MAYBE', 'WASTE'];
+    }
+
+    function isValidNotification(data) {
+      return data.type is string && data.message is string && data.message.size() <= 500;
+    }
+
+    // --- Collections ---
+
+    // Global stats
+    match /stats/global {
+      allow read: if true;
+      allow write: if isSignedIn(); // Used by handleVote transaction to increment totalSaved
+    }
+
+    // Products
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        isOwner(existing().authorId) || 
+        // Action: Vote/Roast/Tags (triggered by transaction or AI)
+        (incoming().diff(existing()).affectedKeys().hasAny(['votes', 'roast', 'tags']))
+      );
+      allow delete: if isSignedIn() && isOwner(existing().authorId);
+      
+      // Votes subcollection
+      match /votes/{userId} {
+        allow read: if true;
+        allow write: if isSignedIn(); // Simplified to allow any authenticated write
+      }
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow write: if isSignedIn(); // Simplified
+      }
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isSignedIn(); // Simplified
+        
+      // Notifications subcollection
+      match /notifications/{notificationId} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn(); // Simplified
+      }
+    }
+
+    // Activities collection
+    match /activities/{activityId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+  }
+}

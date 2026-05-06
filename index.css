@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --font-inter: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "Courier New", Courier, "JetBrains Mono", monospace;
+
+  --color-neon-green: #00FF88;
+  --color-neon-amber: #FFB800;
+  --color-neon-red: #FF4444;
+  --color-card-dark: #141414;
+  --color-bg-dark: #0A0A0A;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-dark text-white font-inter antialiased selection:bg-neon-green selection:text-black;
+  }
+}
